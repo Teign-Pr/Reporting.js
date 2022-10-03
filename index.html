@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Report</title>
+    <link rel="stylesheet" href="css/ReportCss.css">
 </head>
 <body>
     <div id="report">
@@ -16,10 +17,13 @@
     CreateReport({
         reportName: 'Test-Report',
         reportFormat: {
-            type: 'json',
-            id:'report'
+            inputType: 'json',
+            id: 'report',
+            borderStyle: 'block',
+            borderColor1: 'purple',
+            borderColor2: 'red'
         },
-        url:'test'
+        url: 'iris'
     })
 </script>
 </html>
