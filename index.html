@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Report</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="css/ReportCss.css">
 </head>
 <body>
@@ -21,7 +22,12 @@
             id: 'report',
             borderStyle: 'block',
             borderColor1: 'purple',
-            borderColor2: 'red'
+            borderColor2: 'red',
+            text: {
+                textClass: 'test',
+                showTitle: true,
+                titleSize: 28
+            }
         },
         url: 'iris'
     })

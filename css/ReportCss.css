@@ -1,8 +1,11 @@
 .border {
-    font-size: 1.6rem;
     display: grid;
     place-items: center;
-    min-height: 200px;
+    /*min-height: 200px;*/
     border: 8px solid;
     padding: 1rem;
+}
+
+.test {
+    font-family: "Lucida Console", "Courier New", monospace;
 }

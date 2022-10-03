@@ -5,7 +5,12 @@ interface Config {
         id?: string,// id: Html id
         borderStyle?: string,// borderStyle: {def: block, roof, sides}, {style: add custom style}
         borderColor1?: string,
-        borderColor2?: string
+        borderColor2?: string,
+        text: {
+            textClass?: string,
+            showTitle?: boolean,
+            titleSize?: number
+        }
     },
     url: string// url: to get the data from
 }
@@ -28,31 +33,24 @@ const createHtml = (config: Config, frame: HTMLElement): void => {
     let finalStyle: string
     if(style === styles[0]){
         finalStyle =
-            'border-image: linear-gradient(45deg, '+
-            config.reportFormat.borderColor1 +
-            ', '
-            +config.reportFormat.borderColor2+
-            ') 1;';
+            `border-image: linear-gradient(45deg, ${config.reportFormat.borderColor1}, ${config.reportFormat.borderColor2}) 1;`;
     }else if(style === styles[1]){
         finalStyle =
-            'border-image: linear-gradient(to left, '+
-            config.reportFormat.borderColor1 +
-            ', '
-            +config.reportFormat.borderColor2+
-            ') 1 0;';
+            `border-image: linear-gradient(to left, ${config.reportFormat.borderColor1}, ${config.reportFormat.borderColor2}) 1 0;`;
     }else if(style === styles[2]){
         finalStyle =
-            'border-image: linear-gradient(to bottom, '+
-            config.reportFormat.borderColor1 +
-            ', '
-            +config.reportFormat.borderColor2+
-            ') 0 1;';
+            `border-image: linear-gradient(to bottom, ${config.reportFormat.borderColor1}, ${config.reportFormat.borderColor2}) 0 1;`;
     }else{
         finalStyle = style;
     }
 
-    frame.innerHTML = '<div class="border" style="'+finalStyle+'"> </div>'
+    frame.innerHTML = `<div class="border" id="border" style="${finalStyle}"> </div>`
 
+
+    const border = document.getElementById("border")
+    if(config.reportFormat.text.showTitle) {
+        border.innerHTML = `<h3 class="${config.reportFormat.text.textClass}" style="font-size: ${config.reportFormat.text.titleSize}px">${config.reportName}</h3>`
+    }
 
 }
 
@@ -70,20 +68,31 @@ const initConfig = (option?: Partial<Config>): Config => {
             id: option.reportFormat.id || 'report',
             borderStyle: option.reportFormat.borderStyle || 'block',
             borderColor1: option.reportFormat.borderColor1 || 'turquoise',
-            borderColor2: option.reportFormat.borderColor2 || 'greenyellow'
+            borderColor2: option.reportFormat.borderColor2 || 'greenyellow',
+            text: {
+                textClass: option.reportFormat.text.textClass || '',
+                showTitle: option.reportFormat.text.showTitle || false,
+                titleSize: option.reportFormat.text.titleSize || 25
+            }
         },
         url: option.url
     };
 }
 
-
+/*
 const test: Config = {
         reportName: 'Test-Report',
         reportFormat: {
             inputType: 'json',
             id: 'report',
-            borderStyle: 'block'
+            borderStyle: 'block',
+            text: {
+                showTitle: true,
+                textClass: ''
+            }
         },
         url: 'iris'
 };
 CreateReport(test);
+
+*/
