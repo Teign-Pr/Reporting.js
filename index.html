@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report</title>
+</head>
+<body>
+    <div id="report">
+        <div class="frame">
+
+        </div>
+    </div>
+</body>
+<script src="js/Reporting.js"></script>
+<script>
+    CreateReport({
+        reportName: 'Test-Report',
+        reportFormat: {
+            type: 'json',
+            id:'report'
+        },
+        url:'test'
+    })
+</script>
+</html>
