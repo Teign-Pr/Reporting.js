@@ -6,14 +6,3 @@
     border: 8px solid;
     padding: 1rem;
 }
-
-.full {
-    border-image: linear-gradient(45deg, turquoise, greenyellow) 1;
-}
-
-.sides {
-    border-image: linear-gradient(to left, turquoise, greenyellow) 1 0;
-}
-.sides-2 {
-    border-image: linear-gradient(to bottom, turquoise, greenyellow) 0 1;
-}
