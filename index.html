@@ -8,9 +8,6 @@
 </head>
 <body>
     <div id="report">
-        <div class="frame">
-
-        </div>
     </div>
 </body>
 <script src="js/Reporting.js"></script>
@@ -21,15 +18,18 @@
             inputType: 'json',
             id: 'report',
             borderStyle: 'block',
-            borderColor1: 'purple',
-            borderColor2: 'red',
+            borderColor1: '#17d5ec',
+            borderColor2: '#005564',
             text: {
                 textClass: 'test',
                 showTitle: true,
                 titleSize: 28
-            }
+            },
+
         },
-        url: 'iris'
+        url: 'iris',
+        prams: [{name: 'Date From', type: 'date'}, {name: 'Date To', type: 'date'}],
+        downloadFormat: ['none']
     })
 </script>
 </html>

@@ -10,27 +10,45 @@ interface Config {
             textClass?: string,
             showTitle?: boolean,
             titleSize?: number
-        }
+        },
+        buttonCss?: string,
+        customButton?: CustomButton[]
     },
-    url: string// url: to get the data from
+    url: string, // url: to get the data from
+    prams: Parameter[],
+    downloadFormat?: string[] // File format
+}
+
+interface Parameter {
+    name: string, // Parameter Name
+    type?: string, // HTML input types
+    css?: string
+}
+
+interface CustomButton {
+    name: string, // Button Name
+    css?: string,
+    onClick: (this:HTMLElement, ev:MouseEvent) => any // Click Event
 }
 
 const styles : string[]= ['block', 'roof', 'side']
+
+const downloadFormats: string[] = ['.csv', '.pdf', '.png', '.html', '.doc']
 
 const CreateReport = (inConfig: Partial<Config>): void => {
     var config: Config = initConfig(inConfig);
 
     const reportFrame = document.getElementById(config.reportFormat.id);
 
-    createHtml(config, reportFrame);
+    createHtmlHead(config, reportFrame);
 
 }
 
 
-const createHtml = (config: Config, frame: HTMLElement): void => {
+const createHtmlHead = (config: Config, frame: HTMLElement): void => {
 
-    const style = config.reportFormat.borderStyle;
-    let finalStyle: string
+    const style: string = config.reportFormat.borderStyle;
+    let finalStyle: string;
     if(style === styles[0]){
         finalStyle =
             `border-image: linear-gradient(45deg, ${config.reportFormat.borderColor1}, ${config.reportFormat.borderColor2}) 1;`;
@@ -47,11 +65,68 @@ const createHtml = (config: Config, frame: HTMLElement): void => {
     frame.innerHTML = `<div class="border" id="border" style="${finalStyle}"> </div>`
 
 
-    const border = document.getElementById("border")
+    const border: HTMLElement = document.getElementById("border")
     if(config.reportFormat.text.showTitle) {
-        border.innerHTML = `<h3 class="${config.reportFormat.text.textClass}" style="font-size: ${config.reportFormat.text.titleSize}px">${config.reportName}</h3>`
+        border.innerHTML = `<h3 class="grid-title ${config.reportFormat.text.textClass}" style="font-size: ${config.reportFormat.text.titleSize}px">${config.reportName}</h3>`
     }
 
+
+    const inputs: Parameter[] = config.prams;
+    if(inputs.length > 6){
+        throw ('Config error: To Many Inputs max is 6')
+    }
+
+    inputs.forEach(n => {
+        let inputHtml: string;
+        const type = n.type || 'text'
+        const css = n.css || ''
+
+        inputHtml = `<lable class="grid-container ${config.reportFormat.text.textClass}" for="${n.name}">${n.name}</lable>`
+        border.insertAdjacentHTML("beforeend", inputHtml)
+        inputHtml = `<input type="${type}" id="${n.name}" name="${n.name}" class="grid-inputs ${css}">`
+        border.insertAdjacentHTML("beforeend", inputHtml)
+    })
+
+    border.insertAdjacentHTML("beforeend", `<button class="grid-button" id="Reporting-Run">Run</button>`) // Adds RunButton
+
+    const buttons: CustomButton[] = config.reportFormat.customButton
+    if(buttons != null) {
+        buttons.forEach(n => { // Creates Custom Buttons
+            let html: string;
+            if (n.name == null) throw ('Config Error: Custom Button name is null')
+            if (n.onClick == null) throw ('Config Error: Custom Button event is null')
+            const css = n.css || ''
+
+
+            html = `<button class="${css}" id="${n.name}">${n.name}</button>`
+            border.insertAdjacentHTML('beforeend', html)
+
+            document.getElementById(n.name).addEventListener('click', n.onClick)
+        })
+    }
+
+    if(config.downloadFormat.indexOf('none') == -1){
+        let html: string;
+        html = `<select id="reporting-format" name="reporting-format"></select>`
+        border.insertAdjacentHTML('beforeend', html)
+
+        let dropdown: HTMLElement = document.getElementById("reporting-format")
+
+        if(config.downloadFormat.indexOf('all') == -1){
+            config.downloadFormat.forEach(n => {
+                html = `<option value="${n}">${n}</option>`
+                dropdown.insertAdjacentHTML('beforeend', html)
+            })
+        }
+        else{
+            downloadFormats.forEach(n => {
+                html = `<option value="${n}">${n}</option>`
+                dropdown.insertAdjacentHTML('beforeend', html)
+            })
+        }
+    }else{
+
+    }
 }
 
 
@@ -73,9 +148,13 @@ const initConfig = (option?: Partial<Config>): Config => {
                 textClass: option.reportFormat.text.textClass || '',
                 showTitle: option.reportFormat.text.showTitle || false,
                 titleSize: option.reportFormat.text.titleSize || 25
-            }
+            },
+            buttonCss: option.reportFormat.buttonCss || '',
+            customButton: option.reportFormat.customButton
         },
-        url: option.url
+        url: option.url,
+        prams: option.prams,
+        downloadFormat: option.downloadFormat || ['all']
     };
 }
 
