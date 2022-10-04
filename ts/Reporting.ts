@@ -17,7 +17,8 @@ interface Config {
     },
     url: string, // url: to get the data from
     prams: Parameter[], // prams: inputs
-    downloadFormat?: string[] // File format
+    downloadFormat?: string[], // File format
+    output: string[] // Json Headers
 }
 
 interface Parameter {
@@ -27,7 +28,6 @@ interface Parameter {
     dataId: string
 }
 
-//TODO Do output
 
 interface CustomButton {
     name: string, // Button Name
@@ -117,8 +117,14 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
 
     if(config.downloadFormat.indexOf('none') == -1){
         let html: string;
-        html = `<select id="reporting-format" class="grid-inputs" name="reporting-format"></select>`
+        html = `<div id="reporting-format-div"></div>`
         border.insertAdjacentHTML('beforeend', html)
+
+        const divEle: HTMLElement = document.getElementById('reporting-format-div')
+
+        html = `<select id="reporting-format" class="grid-inputs" name="reporting-format"></select>`
+
+        divEle.insertAdjacentHTML('beforeend', html)
 
         let dropdown: HTMLElement = document.getElementById("reporting-format")
 
@@ -170,6 +176,8 @@ const initConfig = (option?: Partial<Config>): Config => {
 
     if(option.reportName == null) throw ('Config Error: reportName is missing');
     if (option.url == null) throw ('Config Error: url is missing');
+    if(option.prams == null) throw ('Config Error: Input Parameters are is missing')
+    if(option.output == null) throw ('Config Error: Output Fields are missing')
 
     return {
         reportName: option.reportName,
@@ -189,7 +197,8 @@ const initConfig = (option?: Partial<Config>): Config => {
         },
         url: option.url,
         prams: option.prams,
-        downloadFormat: option.downloadFormat || ['all']
+        downloadFormat: option.downloadFormat || ['all'],
+        output: option.output
     };
 }
 
