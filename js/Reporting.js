@@ -34,14 +34,19 @@ var createHtmlHead = function (config, frame) {
     }
     inputs.forEach(function (n) {
         var inputHtml;
+        if (n.dataId == null)
+            throw ('Config error: dataId is null on a pram');
         var type = n.type || 'text';
         var css = n.css || '';
         inputHtml = "<lable class=\"grid-container ".concat(config.reportFormat.text.textClass, "\" for=\"").concat(n.name, "\">").concat(n.name, "</lable>");
         border.insertAdjacentHTML("beforeend", inputHtml);
-        inputHtml = "<input type=\"".concat(type, "\" id=\"").concat(n.name, "\" name=\"").concat(n.name, "\" class=\"grid-inputs ").concat(css, "\">");
+        inputHtml = "<input type=\"".concat(type, "\" id=\"").concat(n.dataId, "\" name=\"").concat(n.name, "\" class=\"grid-inputs ").concat(css, "\">");
         border.insertAdjacentHTML("beforeend", inputHtml);
     });
     border.insertAdjacentHTML("beforeend", "<button class=\"grid-button\" id=\"Reporting-Run\">Run</button>"); // Adds RunButton
+    document.getElementById("Reporting-Run").addEventListener("click", function (ev) {
+        runReport(ev, config);
+    });
     var buttons = config.reportFormat.customButton;
     if (buttons != null) {
         buttons.forEach(function (n) {
@@ -56,29 +61,40 @@ var createHtmlHead = function (config, frame) {
             document.getElementById(n.name).addEventListener('click', n.onClick);
         });
     }
-    var html;
-    html = "<div></div>";
-    border.insertAdjacentHTML('beforeend', html);
     if (config.downloadFormat.indexOf('none') == -1) {
-        html = "<select id=\"reporting-format\" name=\"reporting-format\"></select>";
-        border.insertAdjacentHTML('beforeend', html);
+        var html_1;
+        html_1 = "<select id=\"reporting-format\" class=\"grid-inputs\" name=\"reporting-format\"></select>";
+        border.insertAdjacentHTML('beforeend', html_1);
         var dropdown_1 = document.getElementById("reporting-format");
         if (config.downloadFormat.indexOf('all') == -1) {
             config.downloadFormat.forEach(function (n) {
-                html = "<option value=\"".concat(n, "\">").concat(n, "</option>");
-                dropdown_1.insertAdjacentHTML('beforeend', html);
+                html_1 = "<option value=\"".concat(n, "\">").concat(n, "</option>");
+                dropdown_1.insertAdjacentHTML('beforeend', html_1);
             });
         }
         else {
             downloadFormats.forEach(function (n) {
-                html = "<option value=\"".concat(n, "\">").concat(n, "</option>");
-                dropdown_1.insertAdjacentHTML('beforeend', html);
+                html_1 = "<option value=\"".concat(n, "\">").concat(n, "</option>");
+                dropdown_1.insertAdjacentHTML('beforeend', html_1);
             });
         }
     }
-    else {
-        border.insertAdjacentHTML('beforeend', html);
-    }
+};
+var runReport = function (ev, config) {
+    var dataString = "?";
+    var i = 0;
+    config.prams.forEach(function (n) {
+        var input = document.getElementById(n.dataId);
+        if (i >= config.prams.length - 1) {
+            dataString += n.dataId + '=' + (input === null || input === void 0 ? void 0 : input.value);
+        }
+        else {
+            dataString += n.dataId + '=' + (input === null || input === void 0 ? void 0 : input.value) + '&';
+        }
+        i++;
+    });
+    //console.log(dataString)
+    apiRequest(config.url + dataString);
 };
 var initConfig = function (option) {
     if (option.reportName == null)
@@ -105,6 +121,12 @@ var initConfig = function (option) {
         prams: option.prams,
         downloadFormat: option.downloadFormat || ['all']
     };
+};
+var apiRequest = function (url) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", url, false);
+    xmlHttp.send(null);
+    return xmlHttp.responseText;
 };
 /*
 const test: Config = {

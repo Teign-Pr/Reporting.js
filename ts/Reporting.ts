@@ -1,3 +1,4 @@
+// TODO Work on css
 interface Config {
     reportName: string,// report name: what is the report called
     reportFormat: {
@@ -8,22 +9,25 @@ interface Config {
         borderColor2?: string,
         text: {
             textClass?: string,
-            showTitle?: boolean,
+            showTitle?: boolean, // hide title
             titleSize?: number
         },
         buttonCss?: string,
         customButton?: CustomButton[]
     },
     url: string, // url: to get the data from
-    prams: Parameter[],
+    prams: Parameter[], // prams: inputs
     downloadFormat?: string[] // File format
 }
 
 interface Parameter {
     name: string, // Parameter Name
     type?: string, // HTML input types
-    css?: string
+    css?: string,
+    dataId: string
 }
+
+//TODO Do output
 
 interface CustomButton {
     name: string, // Button Name
@@ -78,18 +82,24 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
 
     inputs.forEach(n => {
         let inputHtml: string;
+        if(n.dataId == null) throw ('Config error: dataId is null on a pram')
         const type = n.type || 'text'
         const css = n.css || ''
 
         inputHtml = `<lable class="grid-container ${config.reportFormat.text.textClass}" for="${n.name}">${n.name}</lable>`
         border.insertAdjacentHTML("beforeend", inputHtml)
-        inputHtml = `<input type="${type}" id="${n.name}" name="${n.name}" class="grid-inputs ${css}">`
+        inputHtml = `<input type="${type}" id="${n.dataId}" name="${n.name}" class="grid-inputs ${css}">`
         border.insertAdjacentHTML("beforeend", inputHtml)
     })
 
     border.insertAdjacentHTML("beforeend", `<button class="grid-button" id="Reporting-Run">Run</button>`) // Adds RunButton
 
-    const buttons: CustomButton[] = config.reportFormat.customButton
+    document.getElementById("Reporting-Run").addEventListener("click", (ev) => {
+        runReport(ev, config);
+    })
+
+    const buttons: CustomButton[] = config.reportFormat.customButton;
+
     if(buttons != null) {
         buttons.forEach(n => { // Creates Custom Buttons
             let html: string;
@@ -107,7 +117,7 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
 
     if(config.downloadFormat.indexOf('none') == -1){
         let html: string;
-        html = `<select id="reporting-format" name="reporting-format"></select>`
+        html = `<select id="reporting-format" class="grid-inputs" name="reporting-format"></select>`
         border.insertAdjacentHTML('beforeend', html)
 
         let dropdown: HTMLElement = document.getElementById("reporting-format")
@@ -124,11 +134,36 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
                 dropdown.insertAdjacentHTML('beforeend', html)
             })
         }
-    }else{
-
     }
 }
 
+
+const runReport = (ev:MouseEvent, config: Config): void => {
+
+    let dataString: string = "?";
+    let i: number = 0;
+    config.prams.forEach(n => {
+        const input = document.getElementById(n.dataId) as HTMLInputElement | null;
+        if(i >= config.prams.length -1) {
+            dataString += n.dataId + '=' + input?.value;
+        }else{
+            dataString += n.dataId + '=' + input?.value + '&';
+        }
+        i++;
+    })
+
+    //console.log(dataString)
+
+    const response: string = apiRequest(config.url + dataString)
+
+    const obj = JSON.parse(response)
+
+    config.prams.forEach(n => {
+        const pram = obj[n.dataId]
+    })
+
+
+}
 
 
 const initConfig = (option?: Partial<Config>): Config => {
@@ -156,6 +191,13 @@ const initConfig = (option?: Partial<Config>): Config => {
         prams: option.prams,
         downloadFormat: option.downloadFormat || ['all']
     };
+}
+
+const apiRequest = (url: string): string => {
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", url, false);
+    xmlHttp.send(null);
+    return xmlHttp.responseText;
 }
 
 /*
