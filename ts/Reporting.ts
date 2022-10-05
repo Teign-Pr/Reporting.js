@@ -20,7 +20,7 @@ interface Config {
         customButton?: CustomButton[]
     },
     url: string, // url: to get the data from
-    prams: Parameter[], // prams: inputs
+    prams?: Parameter[], // prams: inputs
     downloadFormat?: string[], // File format
     output: string[][] // Json Headers
 }
@@ -77,23 +77,24 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
         border.innerHTML = `<h3 class="grid-title ${config.reportFormat.text.textClass}" style="font-size: ${config.reportFormat.text.titleSize}px">${config.reportName}</h3>`
     }
 
+    if(config.prams != null && config.prams.length > 0) {
+        const inputs: Parameter[] = config.prams;
+        if (inputs.length > 6) {
+            throw ('Config error: To Many Inputs max is 6')
+        }
 
-    const inputs: Parameter[] = config.prams;
-    if(inputs.length > 6){
-        throw ('Config error: To Many Inputs max is 6')
+        inputs.forEach(n => {
+            let inputHtml: string;
+            if (n.dataId == null) throw ('Config error: dataId is null on a pram')
+            const type = n.type || 'text'
+            const css = n.css || ''
+
+            inputHtml = `<lable class="grid-container ${config.reportFormat.text.textClass}" for="${n.name}">${n.name}</lable>`
+            border.insertAdjacentHTML("beforeend", inputHtml)
+            inputHtml = `<input type="${type}" id="${n.dataId}" name="${n.name}" class="grid-inputs ${css}">`
+            border.insertAdjacentHTML("beforeend", inputHtml)
+        })
     }
-
-    inputs.forEach(n => {
-        let inputHtml: string;
-        if(n.dataId == null) throw ('Config error: dataId is null on a pram')
-        const type = n.type || 'text'
-        const css = n.css || ''
-
-        inputHtml = `<lable class="grid-container ${config.reportFormat.text.textClass}" for="${n.name}">${n.name}</lable>`
-        border.insertAdjacentHTML("beforeend", inputHtml)
-        inputHtml = `<input type="${type}" id="${n.dataId}" name="${n.name}" class="grid-inputs ${css}">`
-        border.insertAdjacentHTML("beforeend", inputHtml)
-    })
 
     border.insertAdjacentHTML("beforeend", `<button class="grid-button" id="Reporting-Run">Run</button>`) // Adds RunButton
 
@@ -203,7 +204,7 @@ const initConfig = (option?: Partial<Config>): Config => {
             customButton: option.reportFormat.customButton
         },
         url: option.url,
-        prams: option.prams,
+        prams: option.prams || [],
         downloadFormat: option.downloadFormat || ['all'],
         output: option.output
     };
