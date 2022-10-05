@@ -1,3 +1,4 @@
+// TODO Add JQuery
 // TODO Work on css
 // TODO NO Prams
 // TODO Table
@@ -46,7 +47,6 @@ const CreateReport = (inConfig: Partial<Config>): void => {
     var config: Config = initConfig(inConfig);
 
     const reportFrame = document.getElementById(config.reportFormat.id);
-
     createHtmlHead(config, reportFrame);
 
 }

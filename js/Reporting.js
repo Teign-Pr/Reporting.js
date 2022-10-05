@@ -99,7 +99,9 @@ var runReport = function (ev, config) {
     var response = apiRequest(config.url + dataString);
     var obj = JSON.parse(response);
     var mainObj = obj[config.output[0][0]];
-    console.log(mainObj);
+    createTabled(mainObj);
+};
+var createTabled = function (dataset) {
 };
 var initConfig = function (option) {
     if (option.reportName == null)
