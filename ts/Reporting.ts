@@ -1,4 +1,7 @@
 // TODO Work on css
+// TODO NO Prams
+// TODO Table
+// TODO Downloads https://www.encodedna.com/javascript/convert-html-table-to-pdf-using-javascript-without-a-plugin.htm
 interface Config {
     reportName: string,// report name: what is the report called
     reportFormat: {
@@ -18,7 +21,7 @@ interface Config {
     url: string, // url: to get the data from
     prams: Parameter[], // prams: inputs
     downloadFormat?: string[], // File format
-    output: string[] // Json Headers
+    output: string[][] // Json Headers
 }
 
 interface Parameter {
@@ -144,33 +147,37 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
 }
 
 
-const runReport = (ev:MouseEvent, config: Config): void => {
+const runReport = (ev: MouseEvent, config: Config): void => {
 
     let dataString: string = "?";
     let i: number = 0;
     config.prams.forEach(n => {
         const input = document.getElementById(n.dataId) as HTMLInputElement | null;
-        if(i >= config.prams.length -1) {
+        if (i >= config.prams.length - 1) {
             dataString += n.dataId + '=' + input?.value;
-        }else{
+        } else {
             dataString += n.dataId + '=' + input?.value + '&';
         }
         i++;
     })
 
-    //console.log(dataString)
 
     const response: string = apiRequest(config.url + dataString)
 
     const obj = JSON.parse(response)
 
-    config.prams.forEach(n => {
-        const pram = obj[n.dataId]
-    })
+    const mainObj = obj[config.output[0][0]]
+
+    createTabled(mainObj)
+
 
 
 }
 
+
+const createTabled = (dataset: any): void => {
+
+}
 
 const initConfig = (option?: Partial<Config>): Config => {
 
@@ -205,7 +212,7 @@ const initConfig = (option?: Partial<Config>): Config => {
 const apiRequest = (url: string): string => {
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", url, false);
-    xmlHttp.send(null);
+    xmlHttp.send();
     return xmlHttp.responseText;
 }
 

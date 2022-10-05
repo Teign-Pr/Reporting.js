@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="css/ReportCss.css">
 </head>
 <body>
-    <div id="report">
-    </div>
+    <div id="report"></div>
 </body>
 <script src="js/Reporting.js"></script>
 <script>
@@ -25,12 +24,11 @@
                 showTitle: true,
                 titleSize: 28
             },
-
         },
-        url: 'iris',
-        prams: [{name: 'Date From', type: 'date', dataId: 'df'}, {name: 'Date To', type: 'date', dataId: 'dt'}],
+        url: 'https://catfact.ninja/breeds',
+        prams: [{name: 'Limit', type: 'number', dataId: 'limit'}],
         downloadFormat: ['all'],
-        output: ['test', 'test2']
+        output: [['data'], ['breed', 'country', 'origin', 'coat', 'pattern']]
     })
 </script>
 </html>
