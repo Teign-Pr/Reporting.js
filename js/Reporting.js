@@ -28,21 +28,23 @@ var createHtmlHead = function (config, frame) {
     if (config.reportFormat.text.showTitle) {
         border.innerHTML = "<h3 class=\"grid-title ".concat(config.reportFormat.text.textClass, "\" style=\"font-size: ").concat(config.reportFormat.text.titleSize, "px\">").concat(config.reportName, "</h3>");
     }
-    var inputs = config.prams;
-    if (inputs.length > 6) {
-        throw ('Config error: To Many Inputs max is 6');
+    if (config.prams != null && config.prams.length > 0) {
+        var inputs = config.prams;
+        if (inputs.length > 6) {
+            throw ('Config error: To Many Inputs max is 6');
+        }
+        inputs.forEach(function (n) {
+            var inputHtml;
+            if (n.dataId == null)
+                throw ('Config error: dataId is null on a pram');
+            var type = n.type || 'text';
+            var css = n.css || '';
+            inputHtml = "<lable class=\"grid-container ".concat(config.reportFormat.text.textClass, "\" for=\"").concat(n.name, "\">").concat(n.name, "</lable>");
+            border.insertAdjacentHTML("beforeend", inputHtml);
+            inputHtml = "<input type=\"".concat(type, "\" id=\"").concat(n.dataId, "\" name=\"").concat(n.name, "\" class=\"grid-inputs ").concat(css, "\">");
+            border.insertAdjacentHTML("beforeend", inputHtml);
+        });
     }
-    inputs.forEach(function (n) {
-        var inputHtml;
-        if (n.dataId == null)
-            throw ('Config error: dataId is null on a pram');
-        var type = n.type || 'text';
-        var css = n.css || '';
-        inputHtml = "<lable class=\"grid-container ".concat(config.reportFormat.text.textClass, "\" for=\"").concat(n.name, "\">").concat(n.name, "</lable>");
-        border.insertAdjacentHTML("beforeend", inputHtml);
-        inputHtml = "<input type=\"".concat(type, "\" id=\"").concat(n.dataId, "\" name=\"").concat(n.name, "\" class=\"grid-inputs ").concat(css, "\">");
-        border.insertAdjacentHTML("beforeend", inputHtml);
-    });
     border.insertAdjacentHTML("beforeend", "<button class=\"grid-button\" id=\"Reporting-Run\">Run</button>"); // Adds RunButton
     document.getElementById("Reporting-Run").addEventListener("click", function (ev) {
         runReport(ev, config);
@@ -66,6 +68,8 @@ var createHtmlHead = function (config, frame) {
         html_1 = "<div id=\"reporting-format-div\"></div>";
         border.insertAdjacentHTML('beforeend', html_1);
         var divEle = document.getElementById('reporting-format-div');
+        html_1 = "<button class=\"grid-button\">Download</button>";
+        divEle.insertAdjacentHTML('beforeend', html_1);
         html_1 = "<select id=\"reporting-format\" class=\"grid-inputs\" name=\"reporting-format\"></select>";
         divEle.insertAdjacentHTML('beforeend', html_1);
         var dropdown_1 = document.getElementById("reporting-format");
@@ -99,9 +103,56 @@ var runReport = function (ev, config) {
     var response = apiRequest(config.url + dataString);
     var obj = JSON.parse(response);
     var mainObj = obj[config.output[0][0]];
-    createTabled(mainObj);
+    createTabled(mainObj, config);
 };
-var createTabled = function (dataset) {
+var createTabled = function (dataset, config) {
+    var html = '<div class="reporting-format-div" id="reporting-table"></div>';
+    if (document.getElementById("reporting-table") == null) {
+        document.getElementById("border").insertAdjacentHTML('beforeend', html);
+    }
+    var div = document.getElementById("reporting-table");
+    while (div.firstChild) {
+        div.removeChild(div.firstChild);
+    }
+    html = '<table class="report-table" id="report-table-2"></table>';
+    document.getElementById("reporting-table").insertAdjacentHTML('beforeend', html);
+    html = "<thead id=\"report-table-thead\"></thead>";
+    document.getElementById("report-table-2").insertAdjacentHTML('beforeend', html);
+    html = '<tr id="report-table-head"></tr>';
+    document.getElementById("report-table-thead").insertAdjacentHTML('beforeend', html);
+    var tableHead = document.getElementById("report-table-head");
+    config.output[1].forEach(function (n) {
+        html = "<th>".concat(n, "</th>");
+        tableHead.insertAdjacentHTML('beforeend', html);
+    });
+    var idNum = 0;
+    dataset.forEach(function (n) {
+        html = '<tr id="report-table-body-' + idNum + '"></tr>';
+        document.getElementById("report-table-2").insertAdjacentHTML('beforeend', html);
+        config.output[1].forEach(function (x) {
+            html = "<td>".concat(n[x], "</td>");
+            document.getElementById("report-table-body-" + idNum).insertAdjacentHTML('beforeend', html);
+        });
+        idNum++;
+    });
+};
+var createPDF = function () {
+    var table = document.getElementById("reporting-table").innerHTML;
+    var style = "<style>";
+    style = style + "table {width: 100%;font: 17px Calibri;}";
+    style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+    style = style + "padding: 2px 3px;text-align: center;}";
+    style = style + " thead { background-color: #333;color: white;}";
+    style = style + "</style>";
+    var win = window.open('', '', 'height=700,width=700');
+    win.document.write('<html><head>');
+    win.document.write(style); // ADD STYLE INSIDE THE HEAD TAG.
+    win.document.write('</head>');
+    win.document.write('<body>');
+    win.document.write(table); // THE TABLE CONTENTS INSIDE THE BODY TAG.
+    win.document.write('</body></html>');
+    win.document.close(); // CLOSE THE CURRENT WINDOW.
+    win.print(); // PRINT THE CONTENTS.
 };
 var initConfig = function (option) {
     if (option.reportName == null)
@@ -125,11 +176,15 @@ var initConfig = function (option) {
                 showTitle: option.reportFormat.text.showTitle || false,
                 titleSize: option.reportFormat.text.titleSize || 25
             },
+            table: {
+                headerClass: option.reportFormat.table.headerClass || '',
+                bodyClass: option.reportFormat.table.bodyClass || ''
+            } || {},
             buttonCss: option.reportFormat.buttonCss || '',
             customButton: option.reportFormat.customButton
         },
         url: option.url,
-        prams: option.prams,
+        prams: option.prams || [],
         downloadFormat: option.downloadFormat || ['all'],
         output: option.output
     };

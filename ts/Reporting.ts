@@ -1,7 +1,5 @@
 // TODO Add JQuery
 // TODO Work on css
-// TODO NO Prams
-// TODO Table
 // TODO Downloads https://www.encodedna.com/javascript/convert-html-table-to-pdf-using-javascript-without-a-plugin.htm
 interface Config {
     reportName: string,// report name: what is the report called
@@ -16,13 +14,17 @@ interface Config {
             showTitle?: boolean, // hide title
             titleSize?: number
         },
+        table?: {
+            headerClass?: string,
+            bodyClass?: string
+        }
         buttonCss?: string,
         customButton?: CustomButton[]
     },
     url: string, // url: to get the data from
     prams?: Parameter[], // prams: inputs
     downloadFormat?: string[], // File format
-    output: string[][] // Json Headers
+    output: string[][] // Json Headers {dataset} {header1, header2}
 }
 
 interface Parameter {
@@ -125,6 +127,8 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
         border.insertAdjacentHTML('beforeend', html)
 
         const divEle: HTMLElement = document.getElementById('reporting-format-div')
+        html = `<button class="grid-button">Download</button>`
+        divEle.insertAdjacentHTML('beforeend', html)
 
         html = `<select id="reporting-format" class="grid-inputs" name="reporting-format"></select>`
 
@@ -169,16 +173,81 @@ const runReport = (ev: MouseEvent, config: Config): void => {
 
     const mainObj = obj[config.output[0][0]]
 
-    createTabled(mainObj)
+    createTabled(mainObj, config)
 
 
 
 }
 
 
-const createTabled = (dataset: any): void => {
+const createTabled = (dataset: any, config: Config): void => {
+    let html: string = '<div class="reporting-format-div" id="reporting-table"></div>'
 
+    if (document.getElementById("reporting-table") == null) {
+        document.getElementById("border").insertAdjacentHTML('beforeend', html)
+    }
+
+    let div: HTMLElement = document.getElementById("reporting-table")
+
+    while (div.firstChild) {
+        div.removeChild(div.firstChild)
+    }
+
+    html = '<table class="report-table" id="report-table-2"></table>'
+    document.getElementById("reporting-table").insertAdjacentHTML('beforeend', html)
+    html = `<thead id="report-table-thead"></thead>`
+    document.getElementById("report-table-2").insertAdjacentHTML('beforeend', html)
+    html = '<tr id="report-table-head"></tr>'
+    document.getElementById("report-table-thead").insertAdjacentHTML('beforeend', html)
+
+    let tableHead: HTMLElement = document.getElementById("report-table-head")
+
+    config.output[1].forEach(n => {
+        html = `<th>${n}</th>`
+        tableHead.insertAdjacentHTML('beforeend', html)
+    })
+    let idNum: number = 0;
+    dataset.forEach(n => {
+        html = '<tr id="report-table-body-' + idNum + '"></tr>'
+        document.getElementById("report-table-2").insertAdjacentHTML('beforeend', html)
+        config.output[1].forEach(x => {
+            html = `<td>${n[x]}</td>`
+            document.getElementById("report-table-body-" + idNum).insertAdjacentHTML('beforeend', html)
+        })
+        idNum++;
+    })
 }
+
+
+
+
+const createPDF = (): void => {
+    let table: string = document.getElementById("reporting-table").innerHTML
+
+
+    let style = "<style>";
+    style = style + "table {width: 100%;font: 17px Calibri;}";
+    style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+    style = style + "padding: 2px 3px;text-align: center;}";
+    style = style + " thead { background-color: #333;color: white;}"
+    style = style + "</style>";
+
+    const win = window.open('', '', 'height=700,width=700');
+
+    win.document.write('<html><head>');
+    win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+    win.document.write('</head>');
+    win.document.write('<body>');
+    win.document.write(table);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+    win.document.write('</body></html>');
+
+    win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+    win.print();    // PRINT THE CONTENTS.
+}
+
+
+
 
 const initConfig = (option?: Partial<Config>): Config => {
 
@@ -200,6 +269,10 @@ const initConfig = (option?: Partial<Config>): Config => {
                 showTitle: option.reportFormat.text.showTitle || false,
                 titleSize: option.reportFormat.text.titleSize || 25
             },
+            table:{
+                headerClass: option.reportFormat.table.headerClass || '',
+                bodyClass: option.reportFormat.table.bodyClass || ''
+            } || {},
             buttonCss: option.reportFormat.buttonCss || '',
             customButton: option.reportFormat.customButton
         },

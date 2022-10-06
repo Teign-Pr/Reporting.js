@@ -23,11 +23,32 @@
     grid-column-start: 1;
     grid-column-end: 2;
     width: 150px;
+    height: 40px;
+    max-height: 40px;
 }
 
 .grid-inputs {
     width: 150px;
 }
+
+.reporting-format-div thead {
+    background-color: #333;
+    color: white;
+}
+
+.reporting-format-div table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    font-family: sans-serif;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.reporting-format-div th, td {
+    border: 1px solid black;
+    padding: 8px;
+}
+
 
 .test {
     font-family: "Lucida Console", "Courier New", monospace;
