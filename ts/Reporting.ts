@@ -16,7 +16,9 @@ interface Config {
         },
         table?: {
             headerClass?: string,
-            bodyClass?: string
+            bodyClass?: string,
+            scroll?: boolean,
+            scrollHeight?: number
         }
         buttonCss?: string,
         downloadButtonCss?: string,
@@ -48,11 +50,10 @@ const styles : string[]= ['block', 'roof', 'side']
 const downloadFormats: string[] = ['.csv', '.pdf', '.png', '.html', '.doc']
 
 const CreateReport = (inConfig: Partial<Config>): void => {
-    var config: Config = initConfig(inConfig);
+    const config: Config = initConfig(inConfig);
 
     const reportFrame = document.getElementById(config.reportFormat.id);
     createHtmlHead(config, reportFrame);
-
 }
 
 
@@ -86,17 +87,22 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
         if (inputs.length > 6) {
             throw ('Config error: To Many Inputs max is 6')
         }
-
+        let i: number = 0;
         inputs.forEach(n => {
             let inputHtml: string;
             if (n.dataId == null) throw ('Config error: dataId is null on a pram')
             const type = n.type || 'text'
             const css = n.css || ''
+            inputHtml = `<div class="reporting-format-div" id="inputDiv${i}"></div>`
+            border.insertAdjacentHTML("beforeend", inputHtml)
 
-            inputHtml = `<lable class="grid-container ${config.reportFormat.text.textClass}" for="${n.name}">${n.name}</lable>`
-            border.insertAdjacentHTML("beforeend", inputHtml)
+            const div = document.getElementById(`inputDiv${i}`)
+
+            inputHtml = `<lable class="${config.reportFormat.text.textClass}" for="${n.name}">${n.name}</lable>`
+            div.insertAdjacentHTML("beforeend", inputHtml)
             inputHtml = `<input type="${type}" id="${n.dataId}" name="${n.name}" class="grid-inputs ${css}">`
-            border.insertAdjacentHTML("beforeend", inputHtml)
+            div.insertAdjacentHTML("beforeend", inputHtml)
+            i++;
         })
     }
 
@@ -172,7 +178,7 @@ const runReport = (ev: MouseEvent, config: Config): void => {
     })
     let mainObj: string;
 
-    if(config.localData !== null) {
+    if(config.localData == null) {
         const response: string = apiRequest(config.url + dataString)
 
         const obj = JSON.parse(response)
@@ -203,6 +209,10 @@ const createTabled = (dataset: any, config: Config): void => {
     }
 
     html = '<table class="report-table" id="report-table-2"></table>'
+    if(config.reportFormat.table.scroll == true){
+        html = `<table class="report-table" id="report-table-2" style="overflow-y: scroll; height: ${config.reportFormat.table.scrollHeight}px; display:block;"></table>`
+    }
+
     document.getElementById("reporting-table").insertAdjacentHTML('beforeend', html)
     html = `<thead id="report-table-thead"></thead>`
     document.getElementById("report-table-2").insertAdjacentHTML('beforeend', html)
@@ -287,7 +297,9 @@ const initConfig = (option?: Partial<Config>): Config => {
             },
             table:{
                 headerClass: option.reportFormat.table.headerClass || '',
-                bodyClass: option.reportFormat.table.bodyClass || ''
+                bodyClass: option.reportFormat.table.bodyClass || '',
+                scroll: option.reportFormat.table.scroll || false,
+                scrollHeight: option.reportFormat.table.scrollHeight || 200,
             } || {},
             buttonCss: option.reportFormat.buttonCss || '',
             downloadButtonCss: option.reportFormat.downloadButtonCss || '',

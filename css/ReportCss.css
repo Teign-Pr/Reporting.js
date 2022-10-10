@@ -45,6 +45,10 @@
     color: white;
 }
 
+.reporting-format-div input {
+    margin-left: 20px;
+}
+
 .reporting-format-div table {
     border-collapse: collapse;
     border: 1px solid black;

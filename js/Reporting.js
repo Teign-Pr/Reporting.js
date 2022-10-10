@@ -33,16 +33,21 @@ var createHtmlHead = function (config, frame) {
         if (inputs.length > 6) {
             throw ('Config error: To Many Inputs max is 6');
         }
+        var i_1 = 0;
         inputs.forEach(function (n) {
             var inputHtml;
             if (n.dataId == null)
                 throw ('Config error: dataId is null on a pram');
             var type = n.type || 'text';
             var css = n.css || '';
-            inputHtml = "<lable class=\"grid-container ".concat(config.reportFormat.text.textClass, "\" for=\"").concat(n.name, "\">").concat(n.name, "</lable>");
+            inputHtml = "<div class=\"reporting-format-div\" id=\"inputDiv".concat(i_1, "\"></div>");
             border.insertAdjacentHTML("beforeend", inputHtml);
+            var div = document.getElementById("inputDiv".concat(i_1));
+            inputHtml = "<lable class=\"".concat(config.reportFormat.text.textClass, "\" for=\"").concat(n.name, "\">").concat(n.name, "</lable>");
+            div.insertAdjacentHTML("beforeend", inputHtml);
             inputHtml = "<input type=\"".concat(type, "\" id=\"").concat(n.dataId, "\" name=\"").concat(n.name, "\" class=\"grid-inputs ").concat(css, "\">");
-            border.insertAdjacentHTML("beforeend", inputHtml);
+            div.insertAdjacentHTML("beforeend", inputHtml);
+            i_1++;
         });
     }
     border.insertAdjacentHTML("beforeend", "<button class=\"grid-button\" id=\"Reporting-Run\">Run</button>"); // Adds RunButton
@@ -106,9 +111,16 @@ var runReport = function (ev, config) {
         }
         i++;
     });
-    var response = apiRequest(config.url + dataString);
-    var obj = JSON.parse(response);
-    var mainObj = obj[config.output[0][0]];
+    var mainObj;
+    if (config.localData == null) {
+        var response = apiRequest(config.url + dataString);
+        var obj = JSON.parse(response);
+        mainObj = obj[config.output[0][0]];
+    }
+    else {
+        var obj = JSON.parse(config.localData);
+        mainObj = obj[config.output[0][0]];
+    }
     createTabled(mainObj, config);
 };
 var createTabled = function (dataset, config) {
@@ -121,6 +133,9 @@ var createTabled = function (dataset, config) {
         div.removeChild(div.firstChild);
     }
     html = '<table class="report-table" id="report-table-2"></table>';
+    if (config.reportFormat.table.scroll == true) {
+        html = "<table class=\"report-table\" id=\"report-table-2\" style=\"overflow-y: scroll; height: ".concat(config.reportFormat.table.scrollHeight, "px; display:block;\"></table>");
+    }
     document.getElementById("reporting-table").insertAdjacentHTML('beforeend', html);
     html = "<thead id=\"report-table-thead\"></thead>";
     document.getElementById("report-table-2").insertAdjacentHTML('beforeend', html);
@@ -191,13 +206,16 @@ var initConfig = function (option) {
             },
             table: {
                 headerClass: option.reportFormat.table.headerClass || '',
-                bodyClass: option.reportFormat.table.bodyClass || ''
+                bodyClass: option.reportFormat.table.bodyClass || '',
+                scroll: option.reportFormat.table.scroll || false,
+                scrollHeight: option.reportFormat.table.scrollHeight || 200,
             } || {},
             buttonCss: option.reportFormat.buttonCss || '',
             downloadButtonCss: option.reportFormat.downloadButtonCss || '',
             customButton: option.reportFormat.customButton
         },
         url: option.url,
+        localData: option.localData || null,
         prams: option.prams || [],
         downloadFormat: option.downloadFormat || ['all'],
         output: option.output
