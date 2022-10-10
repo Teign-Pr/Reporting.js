@@ -68,8 +68,14 @@ var createHtmlHead = function (config, frame) {
         html_1 = "<div id=\"reporting-format-div\"></div>";
         border.insertAdjacentHTML('beforeend', html_1);
         var divEle = document.getElementById('reporting-format-div');
-        html_1 = "<button class=\"grid-button\">Download</button>";
+        if (config.reportFormat.downloadButtonCss !== '') {
+            html_1 = "<button class=\"".concat(config.reportFormat.downloadButtonCss, "\">Download</button>");
+        }
+        else {
+            html_1 = "<button class=\"grid-button-download\" id=\"grid-button-download\">Download</button>";
+        }
         divEle.insertAdjacentHTML('beforeend', html_1);
+        document.getElementById("grid-button-download").addEventListener('click', function (ev) { downloadHandler(ev, config); });
         html_1 = "<select id=\"reporting-format\" class=\"grid-inputs\" name=\"reporting-format\"></select>";
         divEle.insertAdjacentHTML('beforeend', html_1);
         var dropdown_1 = document.getElementById("reporting-format");
@@ -136,6 +142,13 @@ var createTabled = function (dataset, config) {
         idNum++;
     });
 };
+var downloadHandler = function (ev, config) {
+    var dropdown = document.getElementById("reporting-format");
+    var val = dropdown.value;
+    if (val === '.pdf') {
+        createPDF();
+    }
+};
 var createPDF = function () {
     var table = document.getElementById("reporting-table").innerHTML;
     var style = "<style>";
@@ -181,6 +194,7 @@ var initConfig = function (option) {
                 bodyClass: option.reportFormat.table.bodyClass || ''
             } || {},
             buttonCss: option.reportFormat.buttonCss || '',
+            downloadButtonCss: option.reportFormat.downloadButtonCss || '',
             customButton: option.reportFormat.customButton
         },
         url: option.url,

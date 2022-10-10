@@ -27,6 +27,15 @@
     max-height: 40px;
 }
 
+.grid-button-download {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    width: 100px;
+    height: 20px;
+    max-height: 40px;
+    margin-right: 10px;
+}
+
 .grid-inputs {
     width: 150px;
 }

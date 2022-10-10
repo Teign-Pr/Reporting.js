@@ -19,9 +19,11 @@ interface Config {
             bodyClass?: string
         }
         buttonCss?: string,
+        downloadButtonCss?: string,
         customButton?: CustomButton[]
     },
     url: string, // url: to get the data from
+    localData?: string,
     prams?: Parameter[], // prams: inputs
     downloadFormat?: string[], // File format
     output: string[][] // Json Headers {dataset} {header1, header2}
@@ -127,8 +129,11 @@ const createHtmlHead = (config: Config, frame: HTMLElement): void => {
         border.insertAdjacentHTML('beforeend', html)
 
         const divEle: HTMLElement = document.getElementById('reporting-format-div')
-        html = `<button class="grid-button">Download</button>`
+        if(config.reportFormat.downloadButtonCss !== ''){html = `<button class="${config.reportFormat.downloadButtonCss}">Download</button>`}
+        else{html = `<button class="grid-button-download" id="grid-button-download">Download</button>`}
         divEle.insertAdjacentHTML('beforeend', html)
+
+        document.getElementById("grid-button-download").addEventListener('click', (ev: MouseEvent) => {downloadHandler(ev, config)})
 
         html = `<select id="reporting-format" class="grid-inputs" name="reporting-format"></select>`
 
@@ -165,17 +170,21 @@ const runReport = (ev: MouseEvent, config: Config): void => {
         }
         i++;
     })
+    let mainObj: string;
 
+    if(config.localData !== null) {
+        const response: string = apiRequest(config.url + dataString)
 
-    const response: string = apiRequest(config.url + dataString)
+        const obj = JSON.parse(response)
 
-    const obj = JSON.parse(response)
+        mainObj = obj[config.output[0][0]]
+    }else{
+        const obj = JSON.parse(config.localData)
 
-    const mainObj = obj[config.output[0][0]]
+        mainObj = obj[config.output[0][0]]
+    }
 
     createTabled(mainObj, config)
-
-
 
 }
 
@@ -219,7 +228,14 @@ const createTabled = (dataset: any, config: Config): void => {
 }
 
 
+const downloadHandler = (ev: MouseEvent, config: Config):  void => {
+    let dropdown: HTMLInputElement = document.getElementById("reporting-format") as HTMLInputElement | null
+    let val: string = dropdown.value
 
+    if(val === '.pdf'){
+        createPDF()
+    }
+}
 
 const createPDF = (): void => {
     let table: string = document.getElementById("reporting-table").innerHTML
@@ -274,9 +290,11 @@ const initConfig = (option?: Partial<Config>): Config => {
                 bodyClass: option.reportFormat.table.bodyClass || ''
             } || {},
             buttonCss: option.reportFormat.buttonCss || '',
+            downloadButtonCss: option.reportFormat.downloadButtonCss || '',
             customButton: option.reportFormat.customButton
         },
         url: option.url,
+        localData: option.localData || null,
         prams: option.prams || [],
         downloadFormat: option.downloadFormat || ['all'],
         output: option.output
